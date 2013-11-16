@@ -1,0 +1,15 @@
+{
+  "uuid": "d4318e64-ed5d-4eb0-b1b3-137bbf9c63a7",
+  "shortName": "bat_particles",
+  "longName": "bat_particles",
+  "companyName": "SamCarton",
+  "versionCode": 1,
+  "versionLabel": "1.0.0",
+  "watchapp": {
+    "watchface": true
+  },
+  "appKeys": {},
+  "resources": {
+    "media": []
+  }
+}
