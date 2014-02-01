@@ -37,6 +37,12 @@ static float yAccel;
 static float xAccel;
 static int xCent;
 static int yCent;
+static int xSize;
+
+// move emitter
+static int xPos;
+static uint32_t emitterTimer;
+#define EMITTER_MOVE_TIME 50
 
 // initialise particles to zero
 static void particleInit(Particle *p)
@@ -92,10 +98,10 @@ static void updateParticles(GContext *ctx)
 }
 
 // activate particle with random vel and life at center
-static void activateParticle(Particle *p)
+static void activateParticle(Particle *p, float x, float y)
 {
-  p->pos.x = xCent;
-  p->pos.y = yCent;
+  p->pos.x = x;
+  p->pos.y = y;
   p->vel.x = (((int)(bat_rand()%1001))-500)*VELOCITY_FACTOR;
   p->vel.y = (((int)(bat_rand()%1001))-500)*VELOCITY_FACTOR;
   p->life = 1000 + bat_rand()%1000;
@@ -109,7 +115,7 @@ static void generateParticle()
   {
     if(g_particles[i].life ==0)
     {
-      activateParticle(&g_particles[i]);
+      activateParticle(&g_particles[i], xPos, yCent);
       return;
     }
   }
@@ -126,6 +132,16 @@ static void draw_layer_callback(Layer *me, GContext *ctx){
 
   graphics_context_set_stroke_color(ctx, GColorWhite);
 
+  if(emitterTimer > EMITTER_MOVE_TIME)
+  {
+    emitterTimer = 0;
+    xPos++;
+    if(xPos > xSize)
+    {
+      xPos = 0;
+    }
+  }
+
   int i =0;
   for(;i<NUM_GENERATED;++i)
   {
@@ -137,12 +153,13 @@ static void draw_layer_callback(Layer *me, GContext *ctx){
 }
 
 static void timer_callback(void *data) {
-  AccelData accel = { 0, 0, 0 };
+  AccelData accel = { 0, 0, 0, 0, 0 };
 
   accel_service_peek(&accel);  
   yAccel = -accel.y * ACCEL_FACTOR;
   xAccel = accel.x * ACCEL_FACTOR;
 
+  emitterTimer += TIMER_TIME;
 
   layer_mark_dirty(draw_layer);
 
@@ -157,6 +174,7 @@ static void window_load(Window *window) {
   // set center
   xCent = window_frame.size.w/2;
   yCent = window_frame.size.h/2;
+  xSize = window_frame.size.w;
 
   draw_layer = layer_create(frame);
   layer_set_update_proc(draw_layer, draw_layer_callback);
@@ -179,6 +197,9 @@ static void window_unload(Window *window) {
 static void init() {
   yAccel = 0;
   xAccel = 0;
+  xPos = 0;
+  emitterTimer = 0;
+  xSize = 0;
 
   window = window_create();
   window_set_window_handlers(window, (WindowHandlers) {
